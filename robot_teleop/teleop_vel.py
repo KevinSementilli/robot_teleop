@@ -32,6 +32,9 @@ class TeleopVel(Node):
         # Initialize joint velocities based on the length of joint names
         self.velocities = [0.0] * len(self.joint_names)
 
+        # Flag to print the log only once
+        self.has_logged = False
+
     def joy_callback(self, msg):
         """
         Process joystick input and update joint velocities accordingly.
@@ -48,12 +51,18 @@ class TeleopVel(Node):
         float_array_msg.data = self.velocities
         self.publisher.publish(float_array_msg)
 
+        # Log an info message
+        if not self.has_logged:
+            joint_names_str = ', '.join(self.joint_names)  # Convert joint names to a comma-separated string
+            self.get_logger().info(f"Publishing joint velocities: {joint_names_str}")
+            self.has_logged = True
+
     def control_claws(self, msg):
         """
         Function to control claw(s) based on joystick input.
         """
         # Handle claws based on the number of joints for claws
-        if len(self.joint_names) > 4:  # Multiple claw joints (simulated or other configurations)
+        if len(self.joint_names) > 5:  # Multiple claw joints (simulated or other configurations)
             if len(self.joint_names) == 6:  # Two claw joints
                 if msg.axes[4] == -1.0:  # Right Trigger (RT)
                     self.velocities[4] = self.claw_speed    # Left claw forward
