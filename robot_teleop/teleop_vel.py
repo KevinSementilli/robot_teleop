@@ -1,25 +1,25 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from control_msgs.msg import JointJog
+from std_msgs.msg import Float64MultiArray
 
-class TeleopJointJogJoy(Node):
+class TeleopVel(Node):
 
     def __init__(self):
-        super().__init__("teleop_jointjog_joy")
+        super().__init__("teleop_vel")
 
-        # Declare parameters that can be set via launch file or ros2 parameter system
+        # Declare DEFAULT parameters 
         self.declare_parameter("joint_names", ["base", "arm1", "arm2", "arm3", "claw"])
         self.declare_parameter("joint_speed", 0.8)
         self.declare_parameter("claw_speed", 0.6)
 
-        # Retrieve parameters
+        # Retrieve config parameters
         self.joint_names = self.get_parameter("joint_names").get_parameter_value().string_array_value
         self.joint_speed = self.get_parameter("joint_speed").get_parameter_value().double_value
         self.claw_speed = self.get_parameter("claw_speed").get_parameter_value().double_value
 
         # Publisher to send joint velocity commands
-        self.publisher = self.create_publisher(JointJog, '/teleop_vel', 10)
+        self.publisher = self.create_publisher(Float64MultiArray, '/teleop_vel', 10)
         
         # Subscription to /joy topic to receive joystick input
         self.subscription = self.create_subscription(
@@ -37,18 +37,16 @@ class TeleopJointJogJoy(Node):
         Process joystick input and update joint velocities accordingly.
         """
         # Control the base, arm1, arm2, and arm3 (or more joints dynamically)
-        for i in range(4):  # You can update this loop if there are more joints
+        for i in range(4):
             self.velocities[i] = msg.axes[i] * self.joint_speed
 
         # Call the helper function for claw control logic
         self.control_claws(msg)
 
-        # Create and publish the JointJog message
-        joint_jog_msg = JointJog()
-        joint_jog_msg.joint_names = self.joint_names
-        joint_jog_msg.velocities = self.velocities
-        joint_jog_msg.duration = 0.0  # Continuous motion
-        self.publisher.publish(joint_jog_msg)
+        # Create and publish the Float64MultiArray message
+        float_array_msg = Float64MultiArray()
+        float_array_msg.data = self.velocities
+        self.publisher.publish(float_array_msg)
 
     def control_claws(self, msg):
         """
@@ -79,10 +77,10 @@ class TeleopJointJogJoy(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    teleop_jointjog_joy = TeleopJointJogJoy()
-    rclpy.spin(teleop_jointjog_joy)
+    teleop_vel = TeleopVel()
+    rclpy.spin(teleop_vel)
 
-    teleop_jointjog_joy.destroy_node()
+    teleop_vel.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
