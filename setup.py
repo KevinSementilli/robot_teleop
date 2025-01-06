@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'teleop_joint_jog = robot_teleop.teleop_joint_jog:main',
+            'teleop_vel = robot_teleop.teleop_vel:main',
         ],
     },
 )
