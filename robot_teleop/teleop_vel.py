@@ -19,7 +19,7 @@ class TeleopVel(Node):
         self.claw_speed = self.get_parameter("claw_speed").get_parameter_value().double_value
 
         # Publisher to send joint velocity commands
-        self.publisher = self.create_publisher(Float64MultiArray, '/teleop_vel', 10)
+        self.publisher = self.create_publisher(Float64MultiArray, '/vel_controller/commands', 10)
         
         # Subscription to /joy topic to receive joystick input
         self.subscription = self.create_subscription(
